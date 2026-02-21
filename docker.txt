@@ -24,3 +24,5 @@ docker exec        -it          job-board-db      psql -U admin -d job_board
     ↑               ↑                ↑                      ↑
 run a command   interactive     in this            the command to run
 in a container  terminal        container          (postgres CLI client)
+
+docker exec -it job-board-db psql -U admin -d job_board -c '\du'
