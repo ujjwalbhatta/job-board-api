@@ -1,0 +1,26 @@
+docker run \
+  --name job-board-db \
+  -e POSTGRES_USER=admin \
+  -e POSTGRES_PASSWORD=secret \
+  -e POSTGRES_DB=job_board \
+  -p 5432:5432 \
+  -v job-board-pgdata:/var/lib/postgresql/data \
+  -d \
+  postgres:17
+
+
+
+docker ps                    # running containers
+docker ps -a                 # all containers including stopped ones
+docker images                # images on your machine
+docker volume ls             # volumes
+
+docker stop job-board-db     # gracefully stops the container
+docker start job-board-db    # starts it again (data still there via volume)
+docker rm job-board-db       # removes the container (not the volume)
+docker volume rm job-board-pgdata  # removes the volume (data gone)
+
+docker exec        -it          job-board-db      psql -U admin -d job_board
+    ↑               ↑                ↑                      ↑
+run a command   interactive     in this            the command to run
+in a container  terminal        container          (postgres CLI client)
