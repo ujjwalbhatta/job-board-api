@@ -1,28 +1,26 @@
-import dotenv from 'dotenv'
-dotenv.config()
+import dotenv from "dotenv";
+dotenv.config();
 
-import express, {Request, Response, NextFunction } from 'express'
-import companyRoutes from './routes/company.routes'
+import express, { Request, Response, NextFunction } from "express";
+import companyRoutes from "./routes/company.routes";
 
+const app = express();
+const PORT = process.env.PORT;
 
-const app = express()
-const PORT = process.env.PORT
+app.use(express.json());
 
-app.use(express.json())
+app.use("/companies", companyRoutes);
 
-app.use('/companies',companyRoutes)
-
-app.get('/health', async(req,res)=>{
-    res.json({ status: 'ok'})
-})
+app.get("/health", async (req, res) => {
+  res.json({ status: "ok" });
+});
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-    console.error(err)
-    console.error(err.message);
-    res.status(500).json({ error: 'Internal server error' });
+  console.error(err);
+  console.error(err.message);
+  res.status(500).json({ error: "Internal server error" });
 });
 
 app.listen(PORT, () => {
-    console.log(`Server started on ${PORT}`)
-})
-
+  console.log(`Server started on ${PORT}`);
+});
