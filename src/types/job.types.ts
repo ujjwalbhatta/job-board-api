@@ -1,4 +1,4 @@
-export interface Jobs {
+export interface Job {
   id: number;
   company_id: number;
   title: string;
@@ -15,8 +15,8 @@ export interface Jobs {
 }
 
 export type CreateJobInput = Omit<
-  Jobs,
-  "id" | "posted_at" | "updated_at" | "expires_at"
+  Job,
+  "id" | "posted_at" | "updated_at" 
 >;
 
 export type UpdateJobInput = Partial<CreateJobInput>;

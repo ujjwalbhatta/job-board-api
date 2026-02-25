@@ -3,6 +3,7 @@ dotenv.config();
 
 import express, { Request, Response, NextFunction } from "express";
 import companyRoutes from "./routes/company.routes";
+import jobRoutes from "./routes/job.routes";
 
 const app = express();
 const PORT = process.env.PORT;
@@ -10,6 +11,7 @@ const PORT = process.env.PORT;
 app.use(express.json());
 
 app.use("/companies", companyRoutes);
+app.use("/jobs", jobRoutes);
 
 app.get("/health", async (req, res) => {
   res.json({ status: "ok" });
