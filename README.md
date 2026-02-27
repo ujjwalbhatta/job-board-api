@@ -12,7 +12,7 @@ A REST API where companies post jobs, candidates apply, and admins view analytic
 HTTP Request → Express Route → Repository → Raw SQL → PostgreSQL → Typed Response
 ```
 
-Each layer has one job. Routes handle HTTP. Repositories handle SQL. 
+Each layer has one job. Routes handle HTTP. Repositories handle SQL.
 
 ---
 
@@ -25,6 +25,7 @@ Each layer has one job. Routes handle HTTP. Repositories handle SQL.
 | Framework | Express 5 |
 | Database | PostgreSQL 17 |
 | DB Driver | pg (raw SQL, no ORM) |
+| Migrations | node-pg-migrate |
 | Containerisation | Docker + Docker Compose |
 | CI/CD | GitHub Actions |
 | Docs | Swagger / OpenAPI |
@@ -66,6 +67,7 @@ DB_USER=admin
 DB_PASSWORD=secret
 DB_NAME=job_board
 PORT=3000
+DATABASE_URL=postgres://admin:secret@localhost:5432/job_board
 ```
 
 ### 4. Start PostgreSQL with Docker
@@ -80,18 +82,27 @@ docker run --name job-board-db \
   -d postgres:17
 ```
 
-### 5. Run in development
+### 5. Run migrations
+
+```bash
+npm run db:migrate
+```
+
+### 6. Run in development
 
 ```bash
 npm run dev
 ```
 
 ---
+
 ## Scripts
 
 ```bash
-npm run dev       # Start with nodemon + ts-node (hot reload)
-npm run build     # Compile TypeScript → dist/
-npm start         # Run compiled JS (production)
-npm test          # Run integration tests
+npm run dev                           # ts-node + nodemon, hot reload
+npm run build                         # compile TypeScript → dist/
+npm start                             # run compiled JS
+npm run db:migrate                    # run pending migrations
+npm run db:migrate:down               # roll back last migration
+npm run db:migrate:create -- <name>   # create a new migration
 ```

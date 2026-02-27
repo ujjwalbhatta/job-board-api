@@ -1,3 +1,5 @@
+import { Tag } from "./tag.types";
+
 export interface Job {
   id: number;
   company_id: number;
@@ -20,3 +22,12 @@ export type CreateJobInput = Omit<
 >;
 
 export type UpdateJobInput = Partial<CreateJobInput>;
+
+export interface JobWithCompany extends Job {
+  company_name: string
+  company_industry: string | null
+}
+
+export interface JobDetail extends JobWithCompany {
+  tags: Tag[]
+}

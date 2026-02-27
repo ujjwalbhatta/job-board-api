@@ -5,7 +5,9 @@ import {
   getJobsByCompany,
   createJob,
   updateJob,
-  deleteJob
+  deleteJob,
+  addTagToJob,
+  removeTagFromJob
 } from '../queries/job.queries';
 
 export async function handleGetAllJobs(req: Request, res: Response) {
@@ -60,4 +62,18 @@ export async function handleDeleteJob(req: Request, res: Response) {
     return;
   }
   res.json({ message: 'Job deleted', job });
+}
+
+export async function handleAddTagToJob(req: Request, res: Response) {
+  const job_id = Number(req.params.id);
+  const tag_id = Number(req.params.tagId);
+  await addTagToJob(job_id, tag_id);
+  res.status(204).send();
+}
+
+export async function handleRemoveTagFromJob(req: Request, res: Response) {
+  const job_id = Number(req.params.id);
+  const tag_id = Number(req.params.tagId);
+  await removeTagFromJob(job_id, tag_id);
+  res.status(204).send();
 }
