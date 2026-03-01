@@ -5,12 +5,77 @@ import {
   UpdateJobInput,
   JobWithCompany,
   JobDetail,
+  JobFilterParams,
 } from "../types/job.types";
 
-export async function getAllJobs(): Promise<JobWithCompany[]> {
+export async function getAllJobs(
+  filters: JobFilterParams
+): Promise<JobWithCompany[]> {
+  const { search, remote, job_type, status, salary_max, salary_min, tags } =
+    filters;
+
+  console.log(tags);
+
+  const conditions: string[] = []; //SQL
+  const params: any[] = []; //actual values
+
+  if (search) {
+    params.push(`%${search}%`);
+    conditions.push(`j.title ILIKE $${params.length}`);
+  }
+
+  if (remote) {
+    params.push(remote);
+    conditions.push(`j.remote = $${params.length}`);
+  }
+
+  if (job_type) {
+    params.push(job_type);
+    conditions.push(`j.job_type = $${params.length}`);
+  }
+
+  if (status) {
+    params.push(status);
+    conditions.push(`j.status = $${params.length}`);
+  }
+
+  if (salary_max) {
+    params.push(salary_max);
+    conditions.push(`j.salary_max <= $${params.length}`);
+  }
+
+  if (salary_min) {
+    params.push(salary_min);
+    conditions.push(`j.salary_min >= $${params.length}`);
+  }
+  if (tags && tags.length > 0) {
+    params.push(tags);
+    conditions.push(`
+      j.id IN (
+        SELECT jt.job_id
+        FROM job_tags jt
+        JOIN tags t ON t.id = jt.tag_id
+        WHERE t.name = ANY($${params.length})
+        GROUP BY jt.job_id
+        HAVING COUNT(DISTINCT t.id) = ${tags.length}
+      )
+    `);
+  }
+
+  //After grouping, you check: how many distinct matching tags does this job have? If the user asked for 2 tags, the job must have matched exactly 2. Job 1 matched both → included. Job 2 matched only 1 → excluded.
+
+  const where =
+    conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
+
   const result = await pool.query<JobWithCompany>(
-    "SELECT j.*, c.name AS company_name, c.industry AS company_industry FROM jobs j INNER JOIN companies c ON j.company_id = c.id ORDER BY j.posted_at DESC"
+    `SELECT j.*, c.name AS company_name, c.industry AS company_industry 
+    FROM jobs j 
+    INNER JOIN companies c ON j.company_id = c.id 
+    ${where} 
+    ORDER BY j.posted_at DESC`,
+    params
   );
+
   return result.rows;
 }
 

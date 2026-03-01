@@ -16,18 +16,25 @@ export interface Job {
   updated_at: Date;
 }
 
-export type CreateJobInput = Omit<
-  Job,
-  "id" | "posted_at" | "updated_at" 
->;
+export type CreateJobInput = Omit<Job, "id" | "posted_at" | "updated_at">;
 
 export type UpdateJobInput = Partial<CreateJobInput>;
 
 export interface JobWithCompany extends Job {
-  company_name: string
-  company_industry: string | null
+  company_name: string;
+  company_industry: string | null;
 }
 
 export interface JobDetail extends JobWithCompany {
-  tags: Tag[]
+  tags: Tag[];
+}
+
+export interface JobFilterParams {
+  search?: string;
+  remote?: boolean;
+  job_type?: "full-time" | "part-time" | "contract" | "internship" | null;
+  status?: "open" | "closed" | "draft";
+  salary_min?: number;
+  salary_max?: number;
+  tags?: string[];
 }
