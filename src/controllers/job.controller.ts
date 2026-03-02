@@ -9,50 +9,23 @@ import {
   addTagToJob,
   removeTagFromJob,
 } from "../queries/job.queries";
-import { JobFilterParams } from "../types/job.types";
+import { getPagination } from "../utils/pagination";
+import { validateJobFilters } from "../utils/filters";
 
-const VALID_JOB_TYPES = ["full-time", "part-time", "contract", "internship"];
-const VALID_JOB_STATUS = ["open", "closed", "draft"];
+export async function handleGetAllJobs(
+  req: Request,
+  res: Response
+): Promise<void> {
+  const validated = validateJobFilters(req);
 
-export async function handleGetAllJobs(req: Request, res: Response) {
-  const { search, remote, job_type, status, salary_min, salary_max, tags } =
-    req.query;
-
-  if (job_type && !VALID_JOB_TYPES.includes(job_type as string)) {
-    return res.status(400).json({
-      error: `Invalid job_type. Valid values: ${VALID_JOB_TYPES.join(", ")}`,
-    });
+  if ("error" in validated) {
+    res.status(validated.status).json({ error: validated.error });
+    return;
   }
 
-  if (status && !VALID_JOB_STATUS.includes(status as string)) {
-    return res.status(400).json({
-      error: `Invalid job_status. Valid values: ${VALID_JOB_STATUS.join(", ")}`,
-    });
-  }
-
-  //type narrowing
-  const filters: JobFilterParams = {
-    search: typeof search === "string" ? search : undefined,
-    remote: remote === "true" ? true : remote === "false" ? false : undefined,
-    job_type:
-      typeof job_type === "string"
-        ? (job_type as JobFilterParams["job_type"])
-        : undefined,
-    status:
-      typeof status === "string"
-        ? (status as JobFilterParams["status"])
-        : undefined,
-    salary_max: salary_max ? Number(salary_max) : undefined,
-    salary_min: salary_min ? Number(salary_min) : undefined,
-    tags:
-      typeof tags === "string"
-        ? tags.split(",").map((i) => i.trim())
-        : undefined,
-  };
-
-  const jobs = await getAllJobs(filters);
-
-  res.json(jobs);
+  const pagination = getPagination(req);
+  const result = await getAllJobs(validated.filters, pagination);
+  res.json(result);
 }
 
 export async function handleGetJobById(req: Request, res: Response) {

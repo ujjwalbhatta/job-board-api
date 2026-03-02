@@ -7,14 +7,15 @@ import {
   JobDetail,
   JobFilterParams,
 } from "../types/job.types";
+import { PaginatedResult, Pagination } from "../types/pagination.types";
 
 export async function getAllJobs(
-  filters: JobFilterParams
-): Promise<JobWithCompany[]> {
+  filters: JobFilterParams,
+  pagination: Pagination
+): Promise<PaginatedResult<JobWithCompany>> {
   const { search, remote, job_type, status, salary_max, salary_min, tags } =
     filters;
-
-  console.log(tags);
+  const { page = 1, limit = 10 } = pagination;
 
   const conditions: string[] = []; //SQL
   const params: any[] = []; //actual values
@@ -63,20 +64,37 @@ export async function getAllJobs(
   }
 
   //After grouping, you check: how many distinct matching tags does this job have? If the user asked for 2 tags, the job must have matched exactly 2. Job 1 matched both → included. Job 2 matched only 1 → excluded.
-
+  const offset = (page - 1) * limit;
   const where =
     conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
 
-  const result = await pool.query<JobWithCompany>(
-    `SELECT j.*, c.name AS company_name, c.industry AS company_industry 
-    FROM jobs j 
-    INNER JOIN companies c ON j.company_id = c.id 
-    ${where} 
-    ORDER BY j.posted_at DESC`,
-    params
-  );
+  const countParams = [...params];
 
-  return result.rows;
+  const limitIndex = params.length + 1;
+  const offsetIndex = params.length + 2;
+  params.push(limit, offset);
+
+  const [countResult, dataResult] = await Promise.all([
+    pool.query<{ count: string }>(
+      `SELECT COUNT(*) FROM jobs j INNER JOIN companies c ON j.company_id = c.id  ${where}`,
+      countParams
+    ),
+    pool.query<JobWithCompany>(
+      `SELECT j.*, c.name AS company_name, c.industry AS company_industry 
+      FROM jobs j 
+      INNER JOIN companies c ON j.company_id = c.id 
+      ${where} 
+      ORDER BY j.posted_at DESC
+      LIMIT $${limitIndex} OFFSET $${offsetIndex}
+      `,
+      params
+    ),
+  ]);
+
+  const total = parseInt(countResult.rows[0].count, 10);
+  const totalPages = Math.ceil(total / limit);
+
+  return { data: dataResult.rows, total, page, totalPages };
 }
 
 export async function getJobById(id: number): Promise<JobDetail | null> {
