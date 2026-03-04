@@ -7,15 +7,19 @@ import {
   JobDetail,
   JobFilterParams,
 } from "../types/job.types";
-import { PaginatedResult, Pagination } from "../types/pagination.types";
+import {
+  CursorResult,
+  PaginatedResult,
+  Pagination,
+} from "../types/pagination.types";
 
 export async function getAllJobs(
   filters: JobFilterParams,
   pagination: Pagination
-): Promise<PaginatedResult<JobWithCompany>> {
+): Promise<PaginatedResult<JobWithCompany> | CursorResult<JobWithCompany>> {
   const { search, remote, job_type, status, salary_max, salary_min, tags } =
     filters;
-  const { page = 1, limit = 10 } = pagination;
+  const { page = 1, limit = 10, cursor } = pagination;
 
   const conditions: string[] = []; //SQL
   const params: any[] = []; //actual values
@@ -49,6 +53,7 @@ export async function getAllJobs(
     params.push(salary_min);
     conditions.push(`j.salary_min >= $${params.length}`);
   }
+
   if (tags && tags.length > 0) {
     params.push(tags);
     conditions.push(`
@@ -64,10 +69,40 @@ export async function getAllJobs(
   }
 
   //After grouping, you check: how many distinct matching tags does this job have? If the user asked for 2 tags, the job must have matched exactly 2. Job 1 matched both → included. Job 2 matched only 1 → excluded.
-  const offset = (page - 1) * limit;
   const where =
     conditions.length > 0 ? "WHERE " + conditions.join(" AND ") : "";
 
+  const baseSelect = `
+    SELECT j.*, c.name AS company_name, c.industry AS company_industry 
+    FROM jobs j 
+    INNER JOIN companies c ON j.company_id = c.id 
+  `;
+
+  if (cursor !== undefined) {
+    const cursorWhere = where
+      ? `${where} AND j.id < $${params.length + 1}`
+      : `WHERE j.id < $${params.length + 1}`;
+
+    params.push(cursor);
+
+    const limitIndex = params.length + 1;
+    params.push(limit);
+
+    const result = await pool.query<JobWithCompany>(
+      `${baseSelect}
+      ${cursorWhere} 
+      ORDER BY j.id DESC
+      LIMIT $${limitIndex}`,
+      params
+    );
+
+    const jobs = result.rows;
+    const nextCursor = jobs.length === limit ? jobs[jobs.length - 1].id : null;
+
+    return { data: jobs, nextCursor };
+  }
+
+  const offset = (page - 1) * limit;
   const countParams = [...params];
 
   const limitIndex = params.length + 1;
@@ -80,9 +115,7 @@ export async function getAllJobs(
       countParams
     ),
     pool.query<JobWithCompany>(
-      `SELECT j.*, c.name AS company_name, c.industry AS company_industry 
-      FROM jobs j 
-      INNER JOIN companies c ON j.company_id = c.id 
+      `${baseSelect}
       ${where} 
       ORDER BY j.posted_at DESC
       LIMIT $${limitIndex} OFFSET $${offsetIndex}

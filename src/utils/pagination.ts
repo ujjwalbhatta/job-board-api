@@ -7,6 +7,6 @@ export function getPagination(req: Request): Pagination {
   return {
     page: page ? Math.max(1, Number(page)) : 1,
     limit: limit ? Math.min(100, Number(limit)) : 10,
-    cursor: limit ? Number(cursor) : undefined,
+    cursor: cursor ? Number(cursor) : undefined,
   };
 }

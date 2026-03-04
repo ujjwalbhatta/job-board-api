@@ -24,6 +24,8 @@ export async function handleGetAllJobs(
   }
 
   const pagination = getPagination(req);
+
+  console.log(pagination);
   const result = await getAllJobs(validated.filters, pagination);
   res.json(result);
 }
