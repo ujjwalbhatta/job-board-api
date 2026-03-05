@@ -14,4 +14,6 @@ export type CreateCandidateInput = Omit<
   "id" | "created_at" | "updated_at"
 >;
 
-export type UpdateCandidateInput = Partial<CreateCandidateInput>;
+export type UpdateOmitCandidateInput = Omit<Candidate, "email">
+
+export type UpdateCandidateInput = Partial<UpdateOmitCandidateInput>;

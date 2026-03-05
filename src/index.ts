@@ -5,6 +5,8 @@ import express, { Request, Response, NextFunction } from "express";
 import companyRoutes from "./routes/company.routes";
 import jobRoutes from "./routes/job.routes";
 import tagRoutes from "./routes/tag.routes";
+import candidateRoutes from "./routes/candidate.routes";
+import applicationRoutes from "./routes/application.routes";
 
 const app = express();
 const PORT = process.env.PORT;
@@ -14,6 +16,8 @@ app.use(express.json());
 app.use("/companies", companyRoutes);
 app.use("/jobs", jobRoutes);
 app.use("/tags", tagRoutes);
+app.use("/candidates", candidateRoutes);
+app.use("/applications", applicationRoutes);
 
 app.get("/health", async (req, res) => {
   res.json({ status: "ok" });
