@@ -10,7 +10,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "db:migrate": "node-pg-migrate -m src/db/migrations up",
     "db:migrate:down": "node-pg-migrate -m src/db/migrations down",
-    "db:migrate:create": "node-pg-migrate -m src/db/migrations create --migration-file-language sql"
+    "db:migrate:create": "node-pg-migrate -m src/db/migrations create --migration-file-language sql",
+    "db:seed": "docker exec -i job-board-db psql -U admin -d job_board < src/db/seed.sql"
   },
   "keywords": [],
   "author": "",
