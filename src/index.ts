@@ -8,6 +8,9 @@ import tagRoutes from "./routes/tag.routes";
 import candidateRoutes from "./routes/candidate.routes";
 import applicationRoutes from "./routes/application.routes";
 import analyticsRoutes from "./routes/analytics.routes";
+import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
+
 
 const app = express();
 const PORT = process.env.PORT;
@@ -20,6 +23,8 @@ app.use("/tags", tagRoutes);
 app.use("/candidates", candidateRoutes);
 app.use("/applications", applicationRoutes);
 app.use("/analytics", analyticsRoutes);
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/health", async (req, res) => {
   res.json({ status: "ok" });
