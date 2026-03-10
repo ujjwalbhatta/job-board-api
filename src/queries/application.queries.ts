@@ -5,28 +5,15 @@ import {
   UpdateApplicationInput,
 } from "../types/application.types";
 
-export async function createApplication(
-  input: CreateApplicationInput
-): Promise<Application> {
-  const { job_id, candidate_id, status, cover_letter } = input;
-
-  const result = await pool.query<Application>(
-    `INSERT INTO applications (job_id, candidate_id, status, cover_letter) VALUES ($1, $2, $3, $4) RETURNING *`,
-    [job_id, candidate_id, status, cover_letter]
-  );
-
-  return result.rows[0];
-}
-
 export async function updateApplication(
   id: number,
   input: UpdateApplicationInput
 ): Promise<Application | null> {
-  const { job_id, candidate_id, status, cover_letter } = input;
+  const { status } = input;
 
   const result = await pool.query<Application>(
-    `UPDATE applications SET job_id = COALESCE($1, job_id), candidate_id = COALESCE($2, candidate_id), status = COALESCE($3, status), cover_letter = COALESCE($4, cover_letter), updated_at = NOW() where id = $5 RETURNING *`,
-    [job_id, candidate_id, status, cover_letter, id]
+    `UPDATE applications SET status = COALESCE($1, status) updated_at = NOW() where id = $2 RETURNING *`,
+    [status, id]
   );
 
   return result.rows[0];
@@ -61,3 +48,5 @@ export async function deleteApplication(
 
   return result.rows[0];
 }
+
+

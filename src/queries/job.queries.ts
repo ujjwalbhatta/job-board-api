@@ -1,4 +1,5 @@
 import pool from "../db/pool";
+import { Application, CreateApplicationInput } from "../types/application.types";
 import {
   Job,
   CreateJobInput,
@@ -265,4 +266,48 @@ export async function removeTagFromJob(
     job_id,
     tag_id,
   ]);
+}
+
+export async function applyJob(
+  jobId: number,
+  input: CreateApplicationInput
+): Promise<Application> {
+  const client = await pool.connect();
+  try {
+    const { candidate_id, cover_letter } = input;
+
+    await client.query("BEGIN");
+
+    const jobResult = await client.query(
+      `SELECT * FROM jobs WHERE id = $1 and STATUS = 'open' FOR UPDATE`,
+      [jobId]
+    );
+
+    if (!jobResult.rows[0]) {
+      await client.query("ROLLBACK");
+      throw new Error("JOB_NOT_FOUND");
+    }
+
+    if (jobResult.rows[0].seats === 0) {
+      await client.query("ROLLBACK");
+      throw new Error("JOB_FULL");
+    }
+
+    const result = await client.query<Application>(
+      `INSERT INTO applications (job_id, candidate_id, cover_letter) VALUES ($1,$2,$3) RETURNING *`,
+      [jobId, candidate_id, cover_letter]
+    );
+
+    await client.query(`UPDATE jobs SET seats = seats - 1 WHERE id = $1`, [
+      jobId,
+    ]);
+
+    await client.query("COMMIT");
+    return result.rows[0];
+  } catch (error) {
+    await client.query("ROLLBACK");
+    throw error;
+  } finally {
+    client.release();
+  }
 }

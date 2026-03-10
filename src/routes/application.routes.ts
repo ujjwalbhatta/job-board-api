@@ -1,44 +1,12 @@
 import { Router } from "express";
 import {
   handleGetAllApplication,
-  handleCreateApplication,
   handleDeleteApplication,
   handleGetApplicationById,
   handleUpdateApplication,
 } from "../controllers/application.controller";
 
 const router = Router();
-
-/**
- * @swagger
- * /applications:
- *   post:
- *     summary: Create a new job application
- *     tags: [Applications]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [job_id, candidate_id]
- *             properties:
- *               job_id:
- *                 type: integer
- *                 description: ID of the job being applied to
- *               candidate_id:
- *                 type: integer
- *                 description: ID of the candidate applying
- *               status:
- *                 type: string
- *                 example: applied
- *               cover_letter:
- *                 type: string
- *     responses:
- *       201:
- *         description: Application created
- */
-router.post("/", handleCreateApplication);
 
 /**
  * @swagger

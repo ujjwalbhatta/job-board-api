@@ -1,24 +1,11 @@
 import { Request, Response } from "express";
 import {
-  createApplication,
   updateApplication,
   getAllApplication,
   getApplicationById,
   deleteApplication,
 } from "../queries/application.queries";
 
-export async function handleCreateApplication(req: Request, res: Response) {
-  try {
-    const application = await createApplication(req.body);
-    res.status(201).json(application);
-  } catch (err: any) {
-    if (err.code === "23503") {
-      res.status(404).json({ error: "Job or candidate not found" });
-      return;
-    }
-    throw err;
-  }
-}
 export async function handleUpdateApplication(req: Request, res: Response) {
   const id = Number(req.params.id);
 
@@ -56,3 +43,6 @@ export async function handleDeleteApplication(req: Request, res: Response) {
   }
   res.json({ message: "Application deleted", application });
 }
+
+
+

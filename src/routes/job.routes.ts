@@ -8,6 +8,7 @@ import {
   handleDeleteJob,
   handleRemoveTagFromJob,
   handleAddTagToJob,
+  handleApplyJob,
 } from "../controllers/job.controller";
 
 const router = Router();
@@ -288,6 +289,43 @@ router.post("/:id/tags/:tagId", handleAddTagToJob);
  *         description: Tag removed from job
  */
 router.delete("/:id/tags/:tagId", handleRemoveTagFromJob);
+
+/**
+ * @swagger
+ * /jobs/{id}/apply:
+ *   post:
+ *     summary: Apply to a job
+ *     tags: [Jobs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the job to apply for
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [candidate_id]
+ *             properties:
+ *               candidate_id:
+ *                 type: integer
+ *                 description: ID of the candidate applying
+ *               cover_letter:
+ *                 type: string
+ *                 description: Optional cover letter
+ *     responses:
+ *       201:
+ *         description: Application created
+ *       404:
+ *         description: Job not found or candidate not found
+ *       409:
+ *         description: No seats available or already applied
+ */
+router.post("/:id/apply", handleApplyJob);
 
 export default router;
 

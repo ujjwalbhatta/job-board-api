@@ -8,6 +8,7 @@ import {
   deleteJob,
   addTagToJob,
   removeTagFromJob,
+  applyJob,
 } from "../queries/job.queries";
 import { getPagination } from "../utils/pagination";
 import { validateJobFilters } from "../utils/filters";
@@ -89,4 +90,30 @@ export async function handleRemoveTagFromJob(req: Request, res: Response) {
   const tag_id = Number(req.params.tagId);
   await removeTagFromJob(job_id, tag_id);
   res.status(204).send();
+}
+
+export async function handleApplyJob(req: Request, res: Response) {
+  try {
+    const jobId = Number(req.params.id)
+    const application = await applyJob(jobId, req.body)
+    res.status(201).json(application)
+  } catch (err: any) {
+    if (err.message === 'JOB_NOT_FOUND') {
+      res.status(404).json({ error: 'Job not found or not open' })
+      return
+    }
+    if (err.message === 'JOB_FULL') {
+      res.status(409).json({ error: 'No seats available' })
+      return
+    }
+    if (err.code === '23505') {
+      res.status(409).json({ error: 'Already applied to this job' })
+      return
+    }
+    if (err.code === '23503') {
+      res.status(404).json({ error: 'Candidate not found' })
+      return
+    }
+    throw err
+  }
 }

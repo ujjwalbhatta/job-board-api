@@ -10,7 +10,9 @@ export interface Application {
 
 export type CreateApplicationInput = Omit<
   Application,
-  "id" | "applied_at" | "updated_at"
+  "id" | "job_id" | "status" | "applied_at" | "updated_at"
 >;
 
-export type UpdateApplicationInput = Partial<CreateApplicationInput>;
+export type UpdateApplicationInput = {
+  status: "reviewed" | "rejected" | "accepted";
+};
