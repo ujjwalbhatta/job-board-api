@@ -7,14 +7,6 @@ export async function handleGetAllTags(req: Request, res: Response) {
 }
 
 export async function handleCreateTag(req: Request, res: Response) {
-  try {
-    const tag = await createTag(req.body);
-    res.status(201).json(tag);
-  } catch (err: any) {
-    if (err.code === "23505") {
-      res.status(409).json({ error: "Tag already exists" });
-      return;
-    }
-    throw err;
-  }
+  const tag = await createTag(req.body);
+  res.status(201).json(tag);
 }

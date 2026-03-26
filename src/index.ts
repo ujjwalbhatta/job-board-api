@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import companyRoutes from "./routes/company.routes";
 import jobRoutes from "./routes/job.routes";
 import tagRoutes from "./routes/tag.routes";
@@ -10,7 +10,7 @@ import applicationRoutes from "./routes/application.routes";
 import analyticsRoutes from "./routes/analytics.routes";
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
-
+import { errorHandler } from "./middleware/errorHandler";
 
 const app = express();
 const PORT = process.env.PORT;
@@ -30,12 +30,10 @@ app.get("/health", async (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-  console.error(err);
-  console.error(err.message);
-  res.status(500).json({ error: "Internal server error" });
-});
+app.use(errorHandler)
 
 app.listen(PORT, () => {
   console.log(`Server started on ${PORT}`);
 });
+
+export default app

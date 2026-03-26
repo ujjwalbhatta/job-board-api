@@ -8,16 +8,8 @@ import {
 } from "../queries/candidate.queries";
 
 export async function handleCreateCandidate(req: Request, res: Response) {
-  try {
-    const candidate = await createCandidate(req.body);
-    res.status(201).json(candidate);
-  } catch (err: any) {
-    if (err.code === "23505") {
-      res.status(409).json({ error: "Email already exists" });
-      return;
-    }
-    throw err;
-  }
+  const candidate = await createCandidate(req.body);
+  res.status(201).json(candidate);
 }
 
 export async function handleUpdateCandidate(req: Request, res: Response) {

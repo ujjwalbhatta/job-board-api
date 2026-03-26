@@ -26,3 +26,5 @@ run a command   interactive     in this            the command to run
 in a container  terminal        container          (postgres CLI client)
 
 docker exec -it job-board-db psql -U admin -d job_board -c '\du'
+
+docker exec -it job-board-db psql -U admin -d job_board -c "CREATE DATABASE job_board_test;"

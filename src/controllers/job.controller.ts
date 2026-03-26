@@ -46,16 +46,8 @@ export async function handleGetJobsByCompany(req: Request, res: Response) {
 }
 
 export async function handleCreateJob(req: Request, res: Response) {
-  try {
-    const job = await createJob(req.body);
-    res.status(201).json(job);
-  } catch (err: any) {
-    if (err.code === "23503") {
-      res.status(404).json({ error: "Company not found" });
-      return;
-    }
-    throw err;
-  }
+  const job = await createJob(req.body);
+  res.status(201).json(job);
 }
 
 export async function handleUpdateJob(req: Request, res: Response) {
@@ -93,27 +85,7 @@ export async function handleRemoveTagFromJob(req: Request, res: Response) {
 }
 
 export async function handleApplyJob(req: Request, res: Response) {
-  try {
-    const jobId = Number(req.params.id)
-    const application = await applyJob(jobId, req.body)
-    res.status(201).json(application)
-  } catch (err: any) {
-    if (err.message === 'JOB_NOT_FOUND') {
-      res.status(404).json({ error: 'Job not found or not open' })
-      return
-    }
-    if (err.message === 'JOB_FULL') {
-      res.status(409).json({ error: 'No seats available' })
-      return
-    }
-    if (err.code === '23505') {
-      res.status(409).json({ error: 'Already applied to this job' })
-      return
-    }
-    if (err.code === '23503') {
-      res.status(404).json({ error: 'Candidate not found' })
-      return
-    }
-    throw err
-  }
+  const jobId = Number(req.params.id);
+  const application = await applyJob(jobId, req.body);
+  res.status(201).json(application);
 }
