@@ -8,9 +8,10 @@ import tagRoutes from "./routes/tag.routes";
 import candidateRoutes from "./routes/candidate.routes";
 import applicationRoutes from "./routes/application.routes";
 import analyticsRoutes from "./routes/analytics.routes";
-import swaggerUi from 'swagger-ui-express';
-import { swaggerSpec } from './config/swagger';
+import swaggerUi from "swagger-ui-express";
+import { swaggerSpec } from "./config/swagger";
 import { errorHandler } from "./middleware/errorHandler";
+import { startCronJobs, stopCronJobs } from "./jobs";
 
 const app = express();
 const PORT = process.env.PORT;
@@ -24,16 +25,27 @@ app.use("/candidates", candidateRoutes);
 app.use("/applications", applicationRoutes);
 app.use("/analytics", analyticsRoutes);
 
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/health", async (req, res) => {
   res.json({ status: "ok" });
 });
 
-app.use(errorHandler)
+app.use(errorHandler);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server started on ${PORT}`);
 });
 
-export default app
+startCronJobs();
+
+process.on("SIGTERM", () => {
+  console.log("Sigterm received - shutting down");
+  stopCronJobs();
+  server.close(() => {
+    console.log("Server closed");
+    process.exit(0);
+  });
+});
+
+export default app;
